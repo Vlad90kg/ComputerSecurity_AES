@@ -27,7 +27,7 @@ public class CryptoUtils {
         FileInputStream inputStream = new FileInputStream(inputFile);
 
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[64];
+        byte[] buffer = new byte[128];
         int bytesRead;
         while ((bytesRead = inputStream.read(buffer)) != -1) {
             byte[] output = cipher.update(buffer, 0, bytesRead);
@@ -43,9 +43,32 @@ public class CryptoUtils {
         byte[] encryptedData = byteStream.toByteArray();
         String base64EncodedData = Base64.getEncoder().encodeToString(encryptedData);
 
-        try(FileWriter fileWriter = new FileWriter(outputFile)){
+        try (FileWriter fileWriter = new FileWriter(outputFile)) {
             fileWriter.write(base64EncodedData);
         }
         byteStream.close();
     }
+
+    public static void decryptFile(String algorithm, SecretKey key, IvParameterSpec iv,
+                                   File inputFile, File outputFile) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance(algorithm);
+        cipher.init(Cipher.DECRYPT_MODE, key, iv);
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+             InputStream inputStream = Base64.getDecoder().wrap(new FileInputStream(inputFile))) {
+            byte[] buffer = new byte[128];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                byte[] output = cipher.update(buffer, 0, bytesRead);
+                if (output != null) {
+                    fileOutputStream.write(output);
+                }
+            }
+            byte[] outputBytes = cipher.doFinal();
+            if (outputBytes != null) {
+                fileOutputStream.write(outputBytes);
+            }
+        }
+    }
 }
+
