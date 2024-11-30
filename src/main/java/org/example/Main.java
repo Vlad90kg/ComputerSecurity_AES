@@ -19,7 +19,6 @@ public class Main {
             switch (option) {
                 case "1":
                     menus.encryptMenu();
-
                     break;
                 case "2":
                     menus.decryptMenu();

@@ -16,7 +16,8 @@ import java.util.Scanner;
 
 public class Menu {
     private final Scanner scanner = new Scanner(System.in);
-
+    private SecretKey actualKey = null;
+    IvParameterSpec actualParameterSpec = null;
     public String mainMenu() {
         System.out.println("-- Advanced Encryption Standard menu --");
         System.out.println("---------------------------------------");
@@ -39,7 +40,7 @@ public class Menu {
             System.out.println("1. 128 bits.");
             System.out.println("2. 192 bits.");
             System.out.println("3. 256 bits.");
-            System.out.println("4. Exit.");
+            System.out.println("4. Return to main menu.");
 
             String option = scanner.nextLine();
             switch (option){
@@ -61,9 +62,13 @@ public class Menu {
             }
             if(option.matches("[123]")){
                 SecretKey key = CryptoUtils.getKeyFromKeyGenerator(keySize);
+                actualKey = key;
                 IvParameterSpec ivParameterSpec = CryptoUtils.generateIv();
+                actualParameterSpec = ivParameterSpec;
                 String algorithm = "AES/CBC/PKCS5Padding";
                 CryptoUtils.encryptFile(algorithm,key,ivParameterSpec,plainText,encrypted);
+                System.out.println("The file has been successfully encrypted. Check the encrypted.txt");
+                stayInMenu = false;
             }
 
         }
@@ -71,7 +76,23 @@ public class Menu {
 
     }
 
-    public void decryptMenu() {
+    public void decryptMenu() throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, IOException, BadPaddingException, InvalidKeyException {
+        boolean stayInMenu = true;
+        while (stayInMenu){
+            if (actualKey!=null && actualParameterSpec!=null){
+                File encryptedFile = new File("encrypted.txt");
+                File decryptedFile = new File("decrypted.txt");
+
+                System.out.println("-- Decryption menu --");
+                String algorithm = "AES/CBC/PKCS5Padding";
+                CryptoUtils.decryptFile(algorithm, actualKey, actualParameterSpec,encryptedFile,decryptedFile );
+                System.out.println("The file has been successfully decrypted. Check the decrypted.txt");
+                stayInMenu = false;
+            } else {
+                System.out.println("Decryption cannot proceed: No valid encryption key or parameter specification found.");
+                stayInMenu = false;
+            }
+        }
 
     }
 }
