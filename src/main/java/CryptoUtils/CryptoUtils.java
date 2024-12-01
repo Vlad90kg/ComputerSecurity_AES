@@ -2,6 +2,7 @@ package CryptoUtils;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.security.*;
 import java.util.Base64;
@@ -12,6 +13,27 @@ public class CryptoUtils {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(keySize);
         return keyGenerator.generateKey();
+    }
+    public static void printSecretKeyAndIV(SecretKey secretKey, IvParameterSpec iv) {
+        String base64Key = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+        String base64Iv = Base64.getEncoder().encodeToString(iv.getIV());
+        System.out.println("Secret Key (Base64): " + base64Key);
+        System.out.println("Initializing Vector (Base64): " + base64Iv);
+    }
+
+
+    public static SecretKey decodeBase64ToSecretKey(String base64Key, String algorithm) {
+        // Decode the Base64 string into a byte array
+        byte[] decodedKey = Base64.getDecoder().decode(base64Key);
+
+        // Create and return the SecretKey using the decoded byte array
+        return new SecretKeySpec(decodedKey, algorithm);
+    }
+
+    public static IvParameterSpec decodeBase64ToIv(String encodedIv) {
+        byte[] iv = Base64.getDecoder().decode(encodedIv);
+
+        return new IvParameterSpec(iv);
     }
 
     public static IvParameterSpec generateIv() {

@@ -1,5 +1,7 @@
 package CryptoUtils;
 
+import org.junit.jupiter.api.Test;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -109,4 +111,9 @@ class CryptoUtilsTest {
     }
 
 
+    @Test
+    void printSecretKeyAndIV() throws NoSuchAlgorithmException {
+        SecretKey secretKey = CryptoUtils.getKeyFromKeyGenerator(128);
+
+    }
 }
