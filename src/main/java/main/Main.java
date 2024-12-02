@@ -1,21 +1,12 @@
-package org.example;
-
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+package main;
 
 public class Main {
-    public static void main(String[] args) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, IOException, BadPaddingException, InvalidKeyException {
+    public static void main(String[] args) {
         Menu menus = new Menu();
 
         boolean isRunning = true;
         while (isRunning) {
-            String option = menus.mainMenu();
+            String option = menus.mainMenu().trim();
             switch (option) {
                 case "1":
                     menus.encryptMenu();
