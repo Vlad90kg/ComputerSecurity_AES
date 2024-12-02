@@ -15,7 +15,7 @@ public class Main {
 
         boolean isRunning = true;
         while (isRunning) {
-            String option = menus.mainMenu();
+            String option = menus.mainMenu().trim();
             switch (option) {
                 case "1":
                     menus.encryptMenu();

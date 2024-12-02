@@ -32,53 +32,61 @@ public class Menu {
     }
 
     public void encryptMenu() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IOException, BadPaddingException, InvalidKeyException {
-        System.out.println("-- Encryption menu --");
-        System.out.println("Input a path to file you would like to encrypt: ");
-        String path = scanner.nextLine();
-        File plainText = new File(path);
-        File encrypted = new File("encrypted.txt");
+
         int keySize = -1;
         boolean stayInMenu = true;
         while (stayInMenu) {
-            System.out.println("-- Key size --");
-            System.out.println("---------------------------------------");
-            System.out.println("1. 128 bits.");
-            System.out.println("2. 192 bits.");
-            System.out.println("3. 256 bits.");
-            System.out.println("4. Return to main menu.");
+            System.out.println("-- Encryption menu --");
+            System.out.println("Input a path to file you would like to encrypt: ");
+            String path = scanner.nextLine();
+            if (doesFileExist(path)) {
+                File plainText = new File(path);
+                File encrypted = new File("encrypted.txt");
 
-            String option = scanner.nextLine();
-            switch (option) {
-                case "1":
-                    keySize = 128;
-                    break;
-                case "2":
-                    keySize = 192;
-                    break;
-                case "3":
-                    keySize = 256;
-                    break;
-                case "4":
+                System.out.println("-- Key size --");
+                System.out.println("---------------------------------------");
+                System.out.println("1. 128 bits.");
+                System.out.println("2. 192 bits.");
+                System.out.println("3. 256 bits.");
+                System.out.println("4. Return to main menu.");
+
+                String option = scanner.nextLine().trim();
+                switch (option) {
+                    case "1":
+                        keySize = 128;
+                        break;
+                    case "2":
+                        keySize = 192;
+                        break;
+                    case "3":
+                        keySize = 256;
+                        break;
+                    case "4":
+                        stayInMenu = false;
+                        break;
+                    default:
+                        System.out.println("Invalid option.");
+                        break;
+                }
+                if (option.matches("[123]")) {
+                    SecretKey key = CryptoUtils.getKeyFromKeyGenerator(keySize);
+                    actualKey = key;
+                    IvParameterSpec ivParameterSpec = CryptoUtils.generateIv();
+                    actualParameterSpec = ivParameterSpec;
+                    String algorithm = "AES/CBC/PKCS5Padding";
+                    CryptoUtils.encryptFile(algorithm, key, ivParameterSpec, plainText, encrypted);
+                    System.out.println("The file has been successfully encrypted. Check the encrypted.txt");
+                    CryptoUtils.printSecretKeyAndIV(key, ivParameterSpec);
+
                     stayInMenu = false;
-                    break;
-                default:
-                    System.out.println("Invalid option.");
-                    break;
+                }
+            } else {
+                stayInMenu = invalidPathMenu();
             }
-            if (option.matches("[123]")) {
-                SecretKey key = CryptoUtils.getKeyFromKeyGenerator(keySize);
-                actualKey = key;
-                IvParameterSpec ivParameterSpec = CryptoUtils.generateIv();
-                actualParameterSpec = ivParameterSpec;
-                String algorithm = "AES/CBC/PKCS5Padding";
-                CryptoUtils.encryptFile(algorithm, key, ivParameterSpec, plainText, encrypted);
-                System.out.println("The file has been successfully encrypted. Check the encrypted.txt");
-                CryptoUtils.printSecretKeyAndIV(key, ivParameterSpec);
 
-                stayInMenu = false;
-            }
         }
     }
+
 
     public void decryptMenu() throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, IOException, BadPaddingException, InvalidKeyException {
         boolean stayInMenu = true;
@@ -86,23 +94,58 @@ public class Menu {
             System.out.println("-- Decryption menu --");
             System.out.println("Input a path to file you would like to decrypt: ");
             String path = scanner.nextLine();
-            String algorithm = "AES/CBC/PKCS5Padding";
 
-            File encryptedFile = new File(path);
-            File decryptedFile = new File("decrypted.txt");
+            if (doesFileExist(path)) {
+                String algorithm = "AES/CBC/PKCS5Padding";
 
-            System.out.println("Input the key and Initialization Vector");
-            System.out.println("Key:");
-            String base64Key = scanner.nextLine();
-            SecretKey secretKey = CryptoUtils.decodeBase64ToSecretKey(base64Key,"AES");
-            System.out.println("IV:");
-            String base64iv = scanner.nextLine();
-            IvParameterSpec iv = CryptoUtils.decodeBase64ToIv(base64iv);
-            CryptoUtils.decryptFile(algorithm, secretKey, iv, encryptedFile, decryptedFile);
-            System.out.println("The file has been successfully decrypted. Check the decrypted.txt");
+                File encryptedFile = new File(path);
+                File decryptedFile = new File("decrypted.txt");
 
-            stayInMenu = false;
+                System.out.println("Input the key and Initialization Vector");
+                try {
+                    System.out.println("Key:");
+                    String base64Key = scanner.nextLine().trim();
+                    SecretKey secretKey = CryptoUtils.decodeBase64ToSecretKey(base64Key, "AES");
+
+
+                    System.out.println("IV:");
+                    String base64iv = scanner.nextLine().trim();
+                    IvParameterSpec iv = CryptoUtils.decodeBase64ToIv(base64iv);
+                    CryptoUtils.decryptFile(algorithm, secretKey, iv, encryptedFile, decryptedFile);
+                    System.out.println("The file has been successfully decrypted. Check the decrypted.txt");
+
+                    stayInMenu = false;
+                } catch (IllegalArgumentException exception) {
+                    System.out.println("Invalid key/IV");
+                    break;
+                }
+            } else {
+                stayInMenu = invalidPathMenu();
+            }
+
         }
+    }
+
+    public boolean invalidPathMenu() {
+        System.out.println("Invalid path. Please try again.\n1. Try again.\n2. To main menu.");
+        String option = scanner.nextLine().trim();
+        switch (option) {
+            case "1":
+                return true;
+
+            case "2":
+                return false;
+
+            default:
+                System.out.println("Invalid option");
+                return true;
+
+        }
+    }
+
+    public boolean doesFileExist(String path) {
+        File file = new File(path);
+        return file.exists() && file.isFile();
     }
 
 }
