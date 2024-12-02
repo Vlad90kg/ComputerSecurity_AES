@@ -27,6 +27,7 @@ class CryptoUtilsTest {
         assertNotNull(key);
         assertEquals(keySize / 8, key.getEncoded().length);
     }
+
     @org.junit.jupiter.api.Test
     void getKeyFromKeyGenerator256() throws NoSuchAlgorithmException {
         int keySize = 256;
@@ -38,7 +39,7 @@ class CryptoUtilsTest {
     }
 
     @org.junit.jupiter.api.Test
-    void getIncorrectKeyFromKeyGenerator()  {
+    void getIncorrectKeyFromKeyGenerator() {
         int invalidKeySize = 25;
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -75,10 +76,7 @@ class CryptoUtilsTest {
 
     @org.junit.jupiter.api.Test
     void testIVGeneration() {
-        // Act
         IvParameterSpec ivParameterSpec = CryptoUtils.generateIv();
-
-        // Assert
         assertNotNull(ivParameterSpec);
         assertEquals(16, ivParameterSpec.getIV().length);
     }
@@ -91,8 +89,20 @@ class CryptoUtilsTest {
         File plainText = new File("plaintext.txt");
         File encrypted = new File("encrypted.txt");
         File decrypted = new File("decrypted.txt");
-        CryptoUtils.encryptFile(algorithm,key,ivParameterSpec,plainText,encrypted);
-        CryptoUtils.decryptFile(algorithm,key,ivParameterSpec,encrypted,decrypted);
+        CryptoUtils.encryptFile(algorithm, key, ivParameterSpec, plainText, encrypted);
+        CryptoUtils.decryptFile(algorithm, key, ivParameterSpec, encrypted, decrypted);
+        assertThat(plainText).hasSameTextualContentAs(decrypted);
+    }
+
+    @org.junit.jupiter.api.Test
+    void encryptDecryptFileECB() throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, IOException, BadPaddingException, InvalidKeyException {
+        SecretKey key = CryptoUtils.getKeyFromKeyGenerator(128);
+        String algorithm = "AES/ECB/PKCS5Padding";
+        File plainText = new File("plaintext.txt");
+        File encrypted = new File("encrypted.txt");
+        File decrypted = new File("decrypted.txt");
+        CryptoUtils.encryptFile(algorithm, key, plainText, encrypted);
+        CryptoUtils.decryptFile(algorithm, key, encrypted, decrypted);
         assertThat(plainText).hasSameTextualContentAs(decrypted);
     }
 
@@ -110,10 +120,4 @@ class CryptoUtilsTest {
         });
     }
 
-
-    @Test
-    void printSecretKeyAndIV() throws NoSuchAlgorithmException {
-        SecretKey secretKey = CryptoUtils.getKeyFromKeyGenerator(128);
-
-    }
 }
